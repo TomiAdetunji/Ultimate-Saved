@@ -26,11 +26,13 @@ export default function LinkCollection() {
             body: JSON.stringify({ url: input}),
         });
         const data = await res.json();
+        console.log("Metadata response:", data);
 
         if (!data.error) {
             setLinks((prev) => [...prev, data])
             setInput("")
         }
+        console.log("Submitting:", input);
         setLoading(false)
     }
     
@@ -75,7 +77,7 @@ export default function LinkCollection() {
                                 <div className="flex flex-wrap gap-3 mt-2">
                                     {link.tags.map((tag) => (
                                         <span key={tag}
-                                        className="text-xs bg-zinc-100 px-2 py-1 rounded">
+                                        className="text-xs bg-zinc-100 text-black px-2 py-1 rounded">
                                             {tag}
                                         </span>
                                     ))}
