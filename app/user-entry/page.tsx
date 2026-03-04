@@ -1,6 +1,6 @@
 "use client"
 
-import {useState} from "react"
+import {useState, useEffect} from "react"
 
 type linkData = {
     url:string;
@@ -10,11 +10,23 @@ type linkData = {
     tags: string[];
 };
 
+
 export default function LinkCollection() {
     const [input, setInput] = useState("")
     const [links, setLinks] = useState<linkData[]>([])
     const [loading, setLoading] = useState(false)
     
+    useEffect(() => {
+        const stored = localStorage.getItem("links");
+        if (stored) {
+            setLinks(JSON.parse(stored));
+        }
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem("links", JSON.stringify(links));
+    }, [links]);
+
     async function handleSubmit() {
         if (!input) return
 
