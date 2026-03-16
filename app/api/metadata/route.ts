@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     try {
        // const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
         const result = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
+            model: "gemini-2.5-flash",
             contents: prompt,
         });
         const text = result?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";

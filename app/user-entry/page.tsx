@@ -1,6 +1,10 @@
 "use client"
 
 import {useState, useEffect} from "react"
+import Lightbox from "yet-another-react-lightbox";
+import Captions from "yet-another-react-lightbox/plugins/captions";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/captions.css";
 
 type linkData = {
     url:string;
@@ -12,9 +16,11 @@ type linkData = {
 
 
 export default function LinkCollection() {
-    const [input, setInput] = useState("")
-    const [links, setLinks] = useState<linkData[]>([])
-    const [loading, setLoading] = useState(false)
+    const [input, setInput] = useState("") //link input
+    const [links, setLinks] = useState<linkData[]>([]) //link array
+    const [loading, setLoading] = useState(false) //loading while the async function returns
+    const [open, setOpen] = useState(false) //opens the lightbox
+    const [index, setIndex] = useState(-1) //index in links array for lightbox
     
     useEffect(() => {
         const stored = localStorage.getItem("links");
@@ -47,7 +53,7 @@ export default function LinkCollection() {
         console.log("Submitting:", input);
         setLoading(false)
     }
-    
+    //function openLightbox() {}
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
             <main className="flex min-h-screen w-full max-w-5xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -75,7 +81,10 @@ export default function LinkCollection() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {links.map((link,i) => (
-                        <div key={i} className="rounded-lg border overflow-hidden">
+                        <div key={i} className="rounded-lg border overflow-hidden" onClick={() => {
+                            setIndex(i);
+                            setOpen(true)
+                        }}>
                             {link.image && (
                                 <img
                                     src={link.image}
@@ -98,6 +107,18 @@ export default function LinkCollection() {
                         </div>
                     ))}
                 </div>
+                <Lightbox 
+                    open={open}
+                    close={() => setOpen(false)}
+                    plugins={[Captions]}
+                    slides={links.map(link => ({ 
+                        src: link.image || "",
+                        title: link.title || "",
+                        //description: link.tags 
+                    }))}
+                    index={index}
+                    //you're gonna have to have the onclick keep track of the index of the link it's at so that you can use said index for the array of links to get the image and details you want.
+                />
             </main>
         </div>
     )
