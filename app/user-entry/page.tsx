@@ -53,7 +53,9 @@ export default function LinkCollection() {
         console.log("Submitting:", input);
         setLoading(false)
     }
-    //function openLightbox() {}
+function deleteLink(i: number){
+    setLinks((prev) => prev.filter((_, index) => index !== i));
+}
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
             <main className="flex min-h-screen w-full max-w-5xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
@@ -103,10 +105,15 @@ export default function LinkCollection() {
                                         </span>
                                     ))}
                                 </div>
+                                <button className="group-hover: opacity-100 opacity-0"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteLink(i);
+                                    }}> Delete </button>
                             </div>
                         </div>
                     ))}
-                </div>
+                </div>  
                 <Lightbox 
                     open={open}
                     close={() => setOpen(false)}

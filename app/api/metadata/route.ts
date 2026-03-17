@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     
     Based on the URL and any available information such as the caption and the title, generate:
     1. A short, friendly title guessing what this content is about (e.g. "Macrame wall art tutorial", "Easy sourdough focaccia recipe", "Watercolor painting for beginners"). If you truly cannot tell, just use the platform name.
-    2. 2-4 relevant hobby or craft tags from this list or similar: crafts, cooking, baking, DIY, nail art, beauty, art, drawing, painting, sewing, knitting, crochet, fiber arts, woodworking, gardening, photography, fitness, home decor, journaling, ceramics, embroidery, candle making.
+    2. 2-4 relevant hobby or craft tags from this list or similar: crafts, cooking, baking, DIY, nail art, beauty, makeup, art, drawing, painting, sewing, knitting, crochet, fiber arts, gym, woodworking, gardening, photography, fitness, home decor, journaling, ceramics, embroidery, candle making, hair, fashion.
 
     Respond ONLY with raw JSON, no markdown, no backticks, no explanation:
     { "title": "...", "tags": ["...", "..."] }`;
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
         title: aiTitle,
         image,
         site,
-        tags,
+        tags: tags?.length ? tags : ["uncategorized"],
     });
 }
 
