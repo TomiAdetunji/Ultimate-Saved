@@ -5,8 +5,10 @@ import Lightbox from "yet-another-react-lightbox";
 import Captions from "yet-another-react-lightbox/plugins/captions";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/captions.css";
+import { supabase } from "@/lib/supabase";
 
 type linkData = {
+    id: string;
     url:string;
     title: string;
     image?: string;
@@ -21,7 +23,7 @@ export default function LinkCollection() {
     const [loading, setLoading] = useState(false) //loading while the async function returns
     const [open, setOpen] = useState(false) //opens the lightbox
     const [index, setIndex] = useState(-1) //index in links array for lightbox
-    
+    /* Local Storage Effects
     useEffect(() => {
         const stored = localStorage.getItem("links");
         if (stored) {
@@ -32,6 +34,17 @@ export default function LinkCollection() {
     useEffect(() => {
         localStorage.setItem("links", JSON.stringify(links));
     }, [links]);
+    */
+
+    useEffect(() => {
+        async function fetchLinks() {
+            const { data, error } = await supabase.from("links").select("*").order("created_at", {ascending: false});
+            if (data) {
+                setLinks(data)
+            }
+        }
+        fetchLinks();
+    }, []);
 
     async function handleSubmit() {
         if (!input) return
@@ -44,17 +57,51 @@ export default function LinkCollection() {
             body: JSON.stringify({ url: input}),
         });
         const data = await res.json();
-        console.log("Metadata response:", data);
+        
+        const safeData = {
+            url: input,
+            title: data.title || "Untitled",
+            tags: data.tags?.length ? data.tags : ["uncategorized"],
+            site: new URL(input).hostname.replace("www.", ""),
+            image: null as string | null,
+        };
 
-        if (!data.error) {
-            setLinks((prev) => [...prev, data])
-            setInput("")
+        if (data.image) {
+            try {
+                const imgRes = await fetch(data.image);
+                const blob = await  imgRes.blob();
+
+                const fileName = `${Date.now()}.jpg`;
+
+                const { error: uploadError } = await supabase.storage.from("link-images").upload(fileName, blob);
+
+                if (!uploadError) {
+                    const { data: publicUrl } = supabase.storage.from("link-images").getPublicUrl(fileName);
+                    safeData.image = publicUrl.publicUrl;
+                }
+            } catch (err) {
+                console.log("Image upload failed");
+            }
+        }
+
+        //fallback image
+        if (!safeData.image) {
+            safeData.image = "/file.svg"
+        }
+        const {data: saved, error} = await supabase.from("links").insert([safeData]).select().single();
+
+        if (error) {
+            console.error(error);
+        } else{
+            setLinks((prev) => [saved, ...prev]);
+            setInput("");
         }
         console.log("Submitting:", input);
         setLoading(false)
     }
-function deleteLink(i: number){
-    setLinks((prev) => prev.filter((_, index) => index !== i));
+async function deleteLink(id: string){
+    const {error} = await supabase.from("links").delete().eq("id", id);
+    if (!error) setLinks((prev) => prev.filter((l) => l.id !== id));
 }
     return (
         <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -83,7 +130,7 @@ function deleteLink(i: number){
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {links.map((link,i) => (
-                        <div key={i} className="rounded-lg border overflow-hidden" onClick={() => {
+                        <div key={link.id} className="rounded-lg border overflow-hidden" onClick={() => {
                             setIndex(i);
                             setOpen(true)
                         }}>
@@ -105,10 +152,10 @@ function deleteLink(i: number){
                                         </span>
                                     ))}
                                 </div>
-                                <button className="group-hover: opacity-100 opacity-0"
+                                <button className="opacity-0 group-hover:opacity-100"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        deleteLink(i);
+                                        deleteLink(link.id!);
                                     }}> Delete </button>
                             </div>
                         </div>
