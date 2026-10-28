@@ -14,6 +14,7 @@ type linkData = {
     image?: string;
     site?: string;
     tags: string[];
+    completed: boolean;
 };
 
 
@@ -39,6 +40,7 @@ export default function LinkCollection() {
     useEffect(() => {
         async function fetchLinks() {
             const { data, error } = await supabase.from("links").select("*").order("created_at", {ascending: false});
+            if (error) console.error("Failed to load links: ", error);
             if (data) {
                 setLinks(data)
             }
@@ -130,7 +132,7 @@ async function deleteLink(id: string){
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                     {links.map((link,i) => (
-                        <div key={link.id} className="rounded-lg border overflow-hidden" onClick={() => {
+                        <div key={link.id} className="rounded-lg border overflow-hidden relative" onClick={() => {
                             setIndex(i);
                             setOpen(true)
                         }}>

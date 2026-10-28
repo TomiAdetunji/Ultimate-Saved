@@ -19,7 +19,14 @@ export async function POST(req: Request) {
             const oembedResponse = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`);
             const data = await oembedResponse.json();
             image = data.thumbnail_url || "";
-        } else {
+        } 
+        if (platform === "YouTube") {
+            const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/)?.[1];
+            if (videoId) {
+                image = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            }
+        }
+        else {
             const res = await fetch(url, {
                 headers: {
                     "User-Agent": "Mozilla/5.0",
